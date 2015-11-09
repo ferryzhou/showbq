@@ -16,7 +16,7 @@ var (
 	dataset = flag.String("dataset", "", "")
 	project = flag.String("project", "", "")
 	table   = flag.String("table", "", "")
-	gspath  = flag.String("gspath", "", "gs://<bucket>/<file>")
+	gspath  = flag.String("gspath", "", "gs://<bucket>/<filename>.gz")
 )
 
 const (
