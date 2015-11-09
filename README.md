@@ -11,6 +11,6 @@ Before running command,
   Add Service Account 
   -> Download JSON key
 
-2. Save it as g.pemm under besides each go file.
+2. Save it as g.pem under besides each go file.
 
 
