@@ -16,30 +16,36 @@ var (
 	dataset = flag.String("dataset", "", "")
 	project = flag.String("project", "", "")
 	table   = flag.String("table", "", "")
-	gspath  = flag.String("gspath", "", "gs://<bucket>/<filename>.gz")
+	query   = flag.String("query", "", "")
+	flatten = flag.Bool("flatten", false, "")
 )
 
 const (
 	pemPath    = "g.pem"
-	pageSize   = 100
 	bqEndpoint = "https://www.googleapis.com/auth/bigquery"
-	format     = "CSV"
 )
 
 func getJob() (*bigquery.Job, error) {
-	tableRef := &bigquery.TableReference{
+	dstTableRef := &bigquery.TableReference{
 		ProjectId: *project,
 		DatasetId: *dataset,
 		TableId:   *table,
 	}
-	extract := &bigquery.JobConfigurationExtract{
-		SourceTable:       tableRef,
-		DestinationUris:   []string{*gspath},
-		DestinationFormat: format,
-		Compression:       "GZIP",
+	defaultDatasetRef := &bigquery.DatasetReference{
+		ProjectId: *project,
+		DatasetId: *dataset,
+	}
+	qConf := &bigquery.JobConfigurationQuery{
+		Query:             *query,
+		DestinationTable:  dstTableRef,
+		DefaultDataset:    defaultDatasetRef,
+		AllowLargeResults: true,
+		WriteDisposition:  "WRITE_TRUNCATE",
+		CreateDisposition: "CREATE_IF_NEEDED",
+		FlattenResults:    flatten,
 	}
 	conf := &bigquery.JobConfiguration{
-		Extract: extract,
+		Query: qConf,
 	}
 
 	return &bigquery.Job{
@@ -61,7 +67,7 @@ func getBigqueryService() (*bigquery.Service, error) {
 	return bigquery.New(client)
 }
 
-func showExtract() error {
+func showQuery() error {
 
 	service, err := getBigqueryService()
 	if err != nil {
@@ -100,11 +106,11 @@ func showExtract() error {
 	return nil
 }
 
-// go run showextract.go --dataset=<dataset> --project=<project> \
-//   --table=<table> --gspath=<gspath>
+// go run showequerytotable.go --dataset=<dataset> --project=<project> \
+//   --table=<destination_table> --query=<query>
 func main() {
 	flag.Parse()
-	if err := showExtract(); err != nil {
+	if err := showQuery(); err != nil {
 		fmt.Println(err)
 	}
 }
